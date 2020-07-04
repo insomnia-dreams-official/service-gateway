@@ -158,8 +158,12 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/schema.graphqls", Input: `type NavigationItem {
-    id: String!
+	&ast.Source{Name: "graph/schema.graphqls", Input: `# Structure for site navigation's item; consist of items corresponding to:
+# pages new/sale... <- manully defined pages
+# pages for categories of first and second path's levels <- pages corresponding to table: "category"
+# Example category's path is 1 or 2.3
+type NavigationItem {
+    id: String! # manually set number for new/sale items and articul for categories
     name: String!
     link: String!
     items: [NavigationItem]

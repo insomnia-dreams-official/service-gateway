@@ -5,23 +5,36 @@ package graph
 
 import (
 	"context"
+	catalogPB "github.com/insomnia-dreams-official/service-catalog/pkg/protobuf"
+	"log"
+	"time"
+
 	"github.com/insomnia-dreams-official/service-gateway/graph/generated"
 	"github.com/insomnia-dreams-official/service-gateway/graph/model"
 )
 
-// Grpc call to the category service
 func (r *queryResolver) Navigation(ctx context.Context) ([]*model.NavigationItem, error) {
-	item := model.NavigationItem{ID: "1", Name: "Test", Link: "test"}
-	return []*model.NavigationItem{
-		{
-			ID:   "1",
-			Name: "Test",
-			Link: "test",
-			Items: []*model.NavigationItem{
-				&item,
-			},
-		},
-	}, nil
+	// Resolver for getting site navigation by grpc from service-catalog.
+	// ******************************************************************
+
+	// Create cancellation context
+	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+	defer cancel()
+
+	// Get navigation items from service-catalog
+	resp, err := r.CatalogClient.GetNavigationItems(ctx, &catalogPB.GetNavigationItemsRequest{})
+	if err != nil {
+		log.Printf("can't get navigation from service-catalog: %v", err)
+		return nil, err
+	}
+
+	// Transform navigation items to graphql type
+	var navigationItems []*model.NavigationItem
+	for _, i := range resp.NavigationItems {
+		navigationItems = append(navigationItems, model.GrpcToNavigationItem(i))
+	}
+
+	return navigationItems, nil
 }
 
 // Query returns generated.QueryResolver implementation.

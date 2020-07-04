@@ -1,6 +1,6 @@
-# Structure for site's navigation
-# pages new/sale... <- manully defined pages
-# pages for categories of first and second hierarchy's levels <- pages corresponding to table: "category"
+# Structure for site navigation's item; consist of items corresponding to:
+# - pages new/sale... <- manully defined pages
+# - pages for categories of first and second path's levels <- pages corresponding to table: "category"
 # Example category's path is 1 or 2.3
 type NavigationItem {
     id: String! # manually set number for new/sale items and articul for categories
