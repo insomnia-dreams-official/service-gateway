@@ -9,6 +9,17 @@ type NavigationItem {
     items: [NavigationItem]
 }
 
+# Structure for site category; category is an attribute of every product
+type Category {
+    articul: String!
+    name: String!
+    path: String!
+    link: String!
+    full_link: String!
+}
+
 type Query {
     navigation: [NavigationItem!]!
+    # List of categories with path's level equals to 1; exmaple: path is "1" or "2"...
+    rootcategories: [Category!]!
 }

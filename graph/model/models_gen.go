@@ -2,6 +2,14 @@
 
 package model
 
+type Category struct {
+	Articul  string `json:"articul"`
+	Name     string `json:"name"`
+	Path     string `json:"path"`
+	Link     string `json:"link"`
+	FullLink string `json:"full_link"`
+}
+
 type NavigationItem struct {
 	ID    string            `json:"id"`
 	Name  string            `json:"name"`

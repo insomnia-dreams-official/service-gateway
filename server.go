@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	catalog "github.com/insomnia-dreams-official/service-catalog/pkg/protobuf"
+	"github.com/rs/cors"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"log"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi"
 	"github.com/insomnia-dreams-official/service-gateway/graph"
 	"github.com/insomnia-dreams-official/service-gateway/graph/generated"
 )
@@ -60,19 +62,40 @@ func main() {
 	}
 	defer conn.Close()
 
+	router := chi.NewRouter()
+	router.Use(
+		cors.New(cors.Options{
+			AllowedOrigins:   []string{"http://localhost:3000"},
+			AllowCredentials: true,
+			Debug:            true,
+		}).Handler,
+	)
+
 	// Inject grpc clients in resolvers
 	srv := handler.NewDefaultServer(
 		generated.NewExecutableSchema(
 			generated.Config{
 				Resolvers: &graph.Resolver{
 					CatalogClient: catalog.NewCatalogClient(conn),
-				}}))
+				},
+			},
+		),
+	)
 
 	// Register http handlers
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	router.Handle("/query", srv)
 
 	// Run http server
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func cors2(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		h(w, r)
+	}
 }

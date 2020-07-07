@@ -5,10 +5,10 @@ package graph
 
 import (
 	"context"
-	catalogPB "github.com/insomnia-dreams-official/service-catalog/pkg/protobuf"
 	"log"
 	"time"
 
+	catalogPB "github.com/insomnia-dreams-official/service-catalog/pkg/protobuf"
 	"github.com/insomnia-dreams-official/service-gateway/graph/generated"
 	"github.com/insomnia-dreams-official/service-gateway/graph/model"
 )
@@ -35,6 +35,29 @@ func (r *queryResolver) Navigation(ctx context.Context) ([]*model.NavigationItem
 	}
 
 	return navigationItems, nil
+}
+
+func (r *queryResolver) Rootcategories(ctx context.Context) ([]*model.Category, error) {
+	// Resolver for getting rootcategories by grpc from service-catalog.
+	// ******************************************************************
+
+	// Create cancellation context
+	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+	defer cancel()
+
+	// Get rootcategories from service-catalog
+	resp, err := r.CatalogClient.GetRootcategories(ctx, &catalogPB.GetRootcategoriesRequest{})
+	if err != nil {
+		log.Printf("can't get rootcategories from service-catalog: %v", err)
+		return nil, err
+	}
+	// Transform navigation items to graphql type
+	var rootcategories []*model.Category
+	for _, c := range resp.Rootcategories {
+		rootcategories = append(rootcategories, model.GrpcToCategory(c))
+	}
+
+	return rootcategories, nil
 }
 
 // Query returns generated.QueryResolver implementation.

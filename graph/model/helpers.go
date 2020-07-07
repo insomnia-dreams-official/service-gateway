@@ -3,16 +3,16 @@ package model
 import catalog "github.com/insomnia-dreams-official/service-catalog/pkg/protobuf"
 
 // GrpcToNavigationItem converts pb structure to graphql structure
-func GrpcToNavigationItem(i *catalog.NavigationItem) *NavigationItem {
+func GrpcToNavigationItem(pni *catalog.NavigationItem) *NavigationItem {
 	// Create item
 	ni := NavigationItem{
-		ID:    i.Id,
-		Name:  i.Name,
-		Link:  i.Link,
+		ID:    pni.Id,
+		Name:  pni.Name,
+		Link:  pni.Link,
 		Items: []*NavigationItem{},
 	}
 	// Transform nested items
-	for _, si := range i.Items {
+	for _, si := range pni.Items {
 		ni.Items = append(ni.Items, &NavigationItem{
 			ID:    si.Id,
 			Name:  si.Name,
@@ -21,4 +21,14 @@ func GrpcToNavigationItem(i *catalog.NavigationItem) *NavigationItem {
 		})
 	}
 	return &ni
+}
+
+func GrpcToCategory(pc *catalog.Category) *Category {
+	return &Category{
+		Articul:  pc.Articul,
+		Name:     pc.Name,
+		Path:     pc.Path,
+		Link:     pc.Link,
+		FullLink: pc.FullLink,
+	}
 }
