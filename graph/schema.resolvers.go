@@ -60,6 +60,29 @@ func (r *queryResolver) Rootcategories(ctx context.Context) ([]*model.Category, 
 	return rootcategories, nil
 }
 
+func (r *queryResolver) CategoryChilds(ctx context.Context, link string) ([]*model.Category, error) {
+	// Resolver for getting childCategories by grpc from service-catalog.
+	// ******************************************************************
+
+	// Create cancellation context
+	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+	defer cancel()
+
+	// Get rootcategories from service-catalog
+	resp, err := r.CatalogClient.GetCategoryChilds(ctx, &catalogPB.GetCategoryChildsRequest{Link: link})
+	if err != nil {
+		log.Printf("can't get category childs from service-catalog: %v", err)
+		return nil, err
+	}
+	// Transform navigation items to graphql type
+	var categoryChilds []*model.Category
+	for _, c := range resp.CategoryChilds {
+		categoryChilds = append(categoryChilds, model.GrpcToCategory(c))
+	}
+
+	return categoryChilds, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
